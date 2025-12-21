@@ -25,5 +25,5 @@ def main(arguments: CommandLineArguments):
 
 
 if __name__ == "__main__":
-    ARGUMENTS = CommandLineArguments(underscores_to_dashed=True).parse_args()
+    ARGUMENTS = CommandLineArguments(underscores_to_dashes=True).parse_args()
     main(ARGUMENTS)

@@ -78,11 +78,11 @@ def print_report(compression_ratio: float, performance_drop: float, score: float
 def main(arguments: CommandLineArguments):
     original_model, compressed_model = load_models(arguments.path_to_original_model, arguments.path_to_compressed_model, arguments.batch_size)
     compression_ratio = check_memory_footprint(original_model, compressed_model)
-    performnace_drop = check_quality(original_model, compressed_model)
+    performnace_drop = check_quality(arguments.path_to_original_model, arguments.path_to_compressed_model, original_model, compressed_model, arguments.batch_size)
     score = get_score(compression_ratio, performnace_drop)
     print_report(compression_ratio, performnace_drop, score)
 
 
 if __name__ == "__main__":
-    ARGUMENTS = CommandLineArguments(underscores_to_dashed=True).parse_args()
+    ARGUMENTS = CommandLineArguments(underscores_to_dashes=True).parse_args()
     main(ARGUMENTS)
