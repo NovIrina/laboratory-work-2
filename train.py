@@ -1,20 +1,13 @@
 import json
-import os
 import os.path as osp
 from pathlib import Path
-import sys
 from typing import List, Union
 
-from tap import Tap
-import torch
 import transformers
 from datasets import load_dataset
-from peft import (
-    LoraConfig,
-    get_peft_model,
-    get_peft_model_state_dict,
-    prepare_model_for_kbit_training
-)
+from peft import (LoraConfig, get_peft_model, get_peft_model_state_dict,
+                  prepare_model_for_kbit_training)
+from tap import Tap
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
@@ -71,9 +64,7 @@ class Prompter(object):
                 instruction=instruction, input=input
             )
         else:
-            res = self.template["prompt_no_input"].format(
-                instruction=instruction
-            )
+            res = self.template["prompt_no_input"].format(instruction=instruction)
         if label:
             res = f"{res}{label}"
         if self._verbose:
@@ -89,15 +80,10 @@ def train(arguments: CommandLineArguments) -> None:
 
     prompter = Prompter(arguments.prompt_template_name)
 
-    model = AutoModelForCausalLM.from_pretrained(
-        arguments.model,
-        torch_dtype="auto"
-    )
+    model = AutoModelForCausalLM.from_pretrained(arguments.model, torch_dtype="auto")
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model)
-    tokenizer.pad_token_id = (
-        0
-    )
+    tokenizer.pad_token_id = 0
     tokenizer.padding_side = "left"
 
     def tokenize(prompt, add_eos_token=True):
@@ -141,9 +127,7 @@ def train(arguments: CommandLineArguments) -> None:
 
             tokenized_full_prompt["labels"] = [
                 -100
-            ] * user_prompt_len + tokenized_full_prompt["labels"][
-                user_prompt_len:
-            ]
+            ] * user_prompt_len + tokenized_full_prompt["labels"][user_prompt_len:]
         return tokenized_full_prompt
 
     model = prepare_model_for_kbit_training(model)
@@ -163,12 +147,8 @@ def train(arguments: CommandLineArguments) -> None:
     train_val = data["train"].train_test_split(
         test_size=arguments.val_set_size, shuffle=True, seed=42
     )
-    train_data = (
-        train_val["train"].shuffle().map(generate_and_tokenize_prompt)
-    )
-    val_data = (
-        train_val["test"].shuffle().map(generate_and_tokenize_prompt)
-    )
+    train_data = train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+    val_data = train_val["test"].shuffle().map(generate_and_tokenize_prompt)
 
     trainer = transformers.Trainer(
         model=model,
@@ -186,7 +166,7 @@ def train(arguments: CommandLineArguments) -> None:
             eval_strategy="epoch",
             save_strategy="epoch",
             output_dir=arguments.output_dir,
-            load_best_model_at_end=True
+            load_best_model_at_end=True,
         ),
         data_collator=transformers.DataCollatorForSeq2Seq(
             tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
@@ -196,9 +176,7 @@ def train(arguments: CommandLineArguments) -> None:
 
     old_state_dict = model.state_dict
     model.state_dict = (
-        lambda self, *_, **__: get_peft_model_state_dict(
-            self, old_state_dict()
-        )
+        lambda self, *_, **__: get_peft_model_state_dict(self, old_state_dict())
     ).__get__(model, type(model))
 
     trainer.train()

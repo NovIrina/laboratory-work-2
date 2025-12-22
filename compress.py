@@ -1,7 +1,8 @@
 from pathlib import Path
-from tap import Tap
 
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig, AutoTokenizer
+from tap import Tap
+from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                          BitsAndBytesConfig)
 
 
 class CommandLineArguments(Tap):
@@ -12,9 +13,7 @@ class CommandLineArguments(Tap):
 def compress_model(path_to_model: Path) -> tuple[AutoModelForCausalLM, AutoTokenizer]:
     quantization_config = BitsAndBytesConfig(load_in_4bit=True)
     model = AutoModelForCausalLM.from_pretrained(
-        path_to_model,
-        torch_dtype="auto",
-        quantization_config=quantization_config
+        path_to_model, torch_dtype="auto", quantization_config=quantization_config
     )
     tokenizer = AutoTokenizer.from_pretrained(path_to_model)
     return model, tokenizer
