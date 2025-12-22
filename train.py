@@ -13,20 +13,19 @@ from peft import (
     LoraConfig,
     get_peft_model,
     get_peft_model_state_dict,
-    prepare_model_for_kbit_training,
-    set_peft_model_state_dict,
+    prepare_model_for_kbit_training
 )
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class CommandLineArguments(Tap):
     model: Path
-    path_to_data: Path = Path("yahma/alpaca-cleaned")
+    path_to_data: str = "yahma/alpaca-cleaned"
     output_dir: Path = Path("./lora-alpaca")
     # training hyperparameters
     batch_size: int = 128
     micro_batch_size: int = 4
-    num_epochs: int = 3
+    num_epochs: int = 1
     learning_rate: float = 3e-4
     cutoff_len: int = 256
     val_set_size: int = 2000
@@ -184,9 +183,8 @@ def train(arguments: CommandLineArguments) -> None:
             fp16=True,
             logging_steps=10,
             optim="adamw_torch",
-            eval_strategy="steps" if arguments.val_set_size > 0 else "no",
+            eval_strategy="epoch",
             save_strategy="epoch",
-            eval_steps=200 if arguments.val_set_size > 0 else None,
             output_dir=arguments.output_dir,
             load_best_model_at_end=True
         ),
