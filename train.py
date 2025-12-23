@@ -29,6 +29,11 @@ class CommandLineArguments(Tap):
     lora_target_modules: List[str] = [
         "q_proj",
         "v_proj",
+        "k_proj",
+        "o_proj",
+        "up_proj",
+        "gate_proj",
+        "down_proj"
     ]
     # LLM hyperparameters
     train_on_inputs: bool = True
@@ -161,7 +166,7 @@ def train(arguments: CommandLineArguments) -> None:
         args=transformers.TrainingArguments(
             per_device_train_batch_size=arguments.micro_batch_size,
             gradient_accumulation_steps=gradient_accumulation_steps,
-            warmup_steps=100,
+            warmup_steps=10,
             num_train_epochs=arguments.num_epochs,
             learning_rate=arguments.learning_rate,
             fp16=True,
