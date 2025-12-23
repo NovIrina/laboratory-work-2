@@ -14,7 +14,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 class CommandLineArguments(Tap):
     model: Path
     path_to_data: str = "yahma/alpaca-cleaned"
-    output_dir: Path = Path("./lora-alpaca")
+    output_dir: Path = Path("./data/lora")
     # training hyperparameters
     batch_size: int = 128
     micro_batch_size: int = 4

@@ -10,8 +10,8 @@ from tap import Tap
 class CommandLineArguments(Tap):
     path_to_original_model: Path
     path_to_compressed_model: Path
-    peft_model: Optional[Path] = None
     batch_size: int
+    peft_model: Optional[Path] = None
 
 
 def load_models(
