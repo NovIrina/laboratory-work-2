@@ -80,7 +80,9 @@ def train(arguments: CommandLineArguments) -> None:
 
     prompter = Prompter(arguments.prompt_template_name)
 
-    model = AutoModelForCausalLM.from_pretrained(arguments.model, torch_dtype="auto")
+    model = AutoModelForCausalLM.from_pretrained(
+        arguments.model, torch_dtype="auto", device_map="auto"
+    )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model)
     tokenizer.pad_token_id = 0
@@ -142,6 +144,8 @@ def train(arguments: CommandLineArguments) -> None:
     )
     model = get_peft_model(model, config)
     model.print_trainable_parameters()
+    model.is_parallelizable = True
+    model.model_parallel = True
 
     data = load_dataset(arguments.path_to_data)
     train_val = data["train"].train_test_split(
@@ -173,11 +177,6 @@ def train(arguments: CommandLineArguments) -> None:
         ),
     )
     model.config.use_cache = False
-
-    old_state_dict = model.state_dict
-    model.state_dict = (
-        lambda self, *_, **__: get_peft_model_state_dict(self, old_state_dict())
-    ).__get__(model, type(model))
 
     trainer.train()
 
